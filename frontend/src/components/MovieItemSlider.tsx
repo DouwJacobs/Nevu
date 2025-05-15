@@ -28,6 +28,7 @@ function MovieItemSlider({
   const [items, setItems] = React.useState<Plex.Metadata[] | null>(
     data ?? null
   );
+  const [forceUpdate, setForceUpdate] = React.useState(0);
 
   const [currPage, setCurrPage] = React.useState(0);
 
@@ -56,30 +57,62 @@ function MovieItemSlider({
   }, []);
 
   const fetchData = async () => {
-    if (!dir) return;
+    if (!dir) {
+      return;
+    }
 
-    getLibraryDir(dir, props).then((res) => {
-      // cut the array down so its a multiple of itemsPerPage
-      if (!res.Metadata) return;
+    try {
+      // Add a small delay to allow Plex to update its state
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const res = await getLibraryDir(dir, props);
+      
+      if (!res) {
+        return;
+      }
+      
+      // Handle empty metadata as a valid case
+      if (!res.Metadata) {
+        setItems([]);
+        return;
+      }
 
       let media: Plex.Metadata[] = res.Metadata;
-      if (filter) media = res.Metadata.filter(filter);
+      if (filter) {
+        media = res.Metadata.filter(filter);
+      }
 
-      if (!media) return;
+      if (!media) {
+        setItems([]);
+        return;
+      }
       setItems(shuffle ? shuffleArray(media) : media);
-    });
+    } catch (error) {
+      console.error('MovieItemSlider: Error fetching data:', error);
+      // On error, set empty array to clear the UI
+      setItems([]);
+    }
   };
 
   React.useEffect(() => {
-    if (data) return setItems(data);
+    if (data) {
+      return setItems(data);
+    }
 
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, dir, filter, props, shuffle]);
+  }, [data, dir, filter, props, shuffle, forceUpdate]);
 
-  if (!items) return <></>;
+  if (!items) {
+    return <></>;
+  }
 
   const itemCount = items.slice(0, itemsPerPage * 5).length;
+
+  // Return null if there are no items to display
+  if (itemCount === 0) {
+    return null;
+  }
 
   return (
     <Box
@@ -269,7 +302,11 @@ function MovieItemSlider({
                   index={i}
                   PlexTvSource={plexTvSource}
                   refetchData={
-                    dir && dir.endsWith("onDeck") ? fetchData : undefined
+                    dir && dir.endsWith("onDeck") 
+                      ? async () => {
+                          setForceUpdate(prev => prev + 1);
+                        }
+                      : undefined
                   }
                 />
               );

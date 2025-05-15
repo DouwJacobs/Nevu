@@ -5,6 +5,9 @@ import { getBackendURL } from "../backendURL";
 
 export async function getAllLibraries(): Promise<Plex.LibarySection[]> {
     const res = await authedGet(`/library/sections`);
+    if (!res) {
+        return [];
+    }
     return res.MediaContainer.Directory;
 }
 
@@ -49,6 +52,9 @@ export async function getLibraryMeta(id: string): Promise<Plex.Metadata> {
         ...getIncludeProps(),
         ...getXPlexProps()
     })}`);
+    if (!res) {
+        return {} as Plex.Metadata;
+    }
     return res.MediaContainer.Metadata[0];
 }
 

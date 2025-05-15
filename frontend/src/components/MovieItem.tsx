@@ -7,6 +7,8 @@ import {
   CheckCircleRounded,
   VolumeOffRounded,
   VolumeUpRounded,
+  MoreVert,
+  MoreHoriz,
 } from "@mui/icons-material";
 import {
   Box,
@@ -29,6 +31,7 @@ import {
   getLibraryMetaChildren,
   getItemByGUID,
   setMediaPlayedStatus,
+  getTimelineUpdate,
 } from "../plex";
 import { durationToText } from "./MovieItemSlider";
 import {
@@ -40,7 +43,7 @@ import { create } from "zustand";
 import { usePreviewPlayer } from "../states/PreviewPlayerState";
 import ReactPlayer from "react-player";
 import { useConfirmModal } from "./ConfirmModal";
-import { getBackendURL } from "../backendURL";
+import { getBackendURL, ProxiedRequest } from "../backendURL";
 import { queryBuilder } from "../plex/QuickFunctions";
 
 interface MovieItemPreviewPlaybackState {
@@ -90,6 +93,8 @@ function MovieItem({
   const hoverTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+
+  const [ellipsisMenuAnchor, setEllipsisMenuAnchor] = React.useState<null | HTMLElement>(null);
 
   const handleClose = () => {
     setContextMenu(null);
@@ -449,6 +454,68 @@ function MovieItem({
             position: "relative",
           }}
         >
+          {/* Ellipsis button for Continue Watching cards - now at top right */}
+          {(item.type === "episode" || (item.type === "movie" && item.viewOffset)) && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                zIndex: 20,
+                opacity: 0,
+                transition: "opacity 0.3s",
+                ".MuiBox-root:hover &": {
+                  opacity: 1,
+                },
+              }}
+            >
+              <IconButton
+                onClick={e => {
+                  e.stopPropagation();
+                  setEllipsisMenuAnchor(e.currentTarget);
+                }}
+                aria-label="more options"
+                sx={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+              >
+                <MoreHoriz />
+              </IconButton>
+              <Menu
+                anchorEl={ellipsisMenuAnchor}
+                open={Boolean(ellipsisMenuAnchor)}
+                onClose={() => setEllipsisMenuAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              >
+                <MenuItem
+                  onClick={async e => {
+                    e.stopPropagation();
+                    try {
+                      const response = await ProxiedRequest(`/actions/removeFromContinueWatching?ratingKey=${item.ratingKey}`, "PUT", {
+                        'X-Plex-Token': localStorage.getItem("accessToken") as string,
+                        'accept': 'application/json'
+                      });
+
+                      if (response.status !== 200) {
+                        throw new Error('Failed to remove from continue watching');
+                      }
+                      
+                      setEllipsisMenuAnchor(null);
+                      
+                      if (refetchData) {
+                        await refetchData();
+                      }
+                    } catch (error) {
+                      console.error('Failed to remove from continue watching:', error);
+                      setEllipsisMenuAnchor(null);
+                    }
+                  }}
+                >
+                  Remove from Continue Watching
+                </MenuItem>
+                <MenuItem onClick={e => { e.stopPropagation(); setEllipsisMenuAnchor(null); }}>Close</MenuItem>
+              </Menu>
+            </Box>
+          )}
           <Box
             sx={{
               position: "absolute",
@@ -761,6 +828,7 @@ function MovieItem({
               justifyContent: "space-between",
               padding: "0px 16px",
               gap: 1,
+              position: "relative",
             }}
           >
             <Button
