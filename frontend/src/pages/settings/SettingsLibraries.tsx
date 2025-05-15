@@ -5,7 +5,7 @@ import {
 } from "../../plex";
 import CheckBoxOption from "../../components/settings/CheckBoxOption";
 import { useUserSettings } from "../../states/UserSettingsState";
-
+import CenteredSpinner from "../../components/CenteredSpinner";
 
 function SettingsLibraries() {
     const [libraries, setLibraries] = React.useState<Plex.LibarySection[]>([]);
@@ -51,29 +51,30 @@ function SettingsLibraries() {
         }}
       />
 
-      <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+      {loading ? (
+        <CenteredSpinner />
+      ) : (
+        <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+          {libraries.map((library) => {
+              const key = `LIBRARY_${library.uuid}`;
+              const rawValue = settings[key];
 
-        {libraries.map((library) => {
-            const key = `LIBRARY_${library.uuid}`;
-            const rawValue = settings[key];
+              const checked = rawValue === undefined ? true : rawValue === "true";
 
-            const checked = rawValue === undefined ? true : rawValue === "true";
-
-            return (
-                <CheckBoxOption
-                key={library.key}
-                title={library.title}
-                subtitle={`Type: ${library.type.toUpperCase()}`}
-                checked={checked}
-                onChange={() => {
-                    setSetting(key, checked ? "false" : "true");
-                }}
-                />
-            );
-            })}
-
-
-      </Box>
+              return (
+                  <CheckBoxOption
+                  key={library.key}
+                  title={library.title}
+                  subtitle={`Type: ${library.type.toUpperCase()}`}
+                  checked={checked}
+                  onChange={() => {
+                      setSetting(key, checked ? "false" : "true");
+                  }}
+                  />
+              );
+              })}
+        </Box>
+      )}
     </>
   );
 }

@@ -44,6 +44,7 @@ import {
   VolumeUpRounded,
   Replay10,
   Forward10,
+  StopRounded,
 } from "@mui/icons-material";
 import { VideoSeekSlider } from "react-video-seek-slider";
 import "react-video-seek-slider/styles.css";
@@ -1858,6 +1859,23 @@ function Watch() {
                           ) : (
                             <PlayArrowRounded fontSize="large" />
                           )}
+                        </IconButton>
+
+                        <IconButton
+                          onClick={() => {
+                            setPlaying(false);
+                            if (room && isHost) socket?.emit("RES_SYNC_PLAYBACK_END");
+                            if (itemID && player.current)
+                              getTimelineUpdate(
+                                parseInt(itemID),
+                                Math.floor(player.current?.getDuration() * 1000),
+                                "stopped",
+                                Math.floor(player.current?.getCurrentTime() * 1000)
+                              );
+                            navigate("/");
+                          }}
+                        >
+                          <StopRounded fontSize="large" />
                         </IconButton>
 
                         {playQueue && !(room && !isHost) && (

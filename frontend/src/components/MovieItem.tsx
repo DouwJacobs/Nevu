@@ -7,7 +7,6 @@ import {
   CheckCircleRounded,
   VolumeOffRounded,
   VolumeUpRounded,
-  MoreVert,
   MoreHoriz,
 } from "@mui/icons-material";
 import {
@@ -33,7 +32,6 @@ import {
   getLibraryMetaChildren,
   getItemByGUID,
   setMediaPlayedStatus,
-  getTimelineUpdate,
 } from "../plex";
 import { durationToText } from "./MovieItemSlider";
 import {
