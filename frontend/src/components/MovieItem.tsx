@@ -22,6 +22,8 @@ import {
   Divider,
   ListItemIcon,
   IconButton,
+  alpha,
+  useTheme,
 } from "@mui/material";
 import React, { JSX } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -85,6 +87,8 @@ function MovieItem({
     mouseX: number;
     mouseY: number;
   } | null>(null);
+
+  const theme = useTheme();
 
   const [previewPlaybackState, setPreviewPlaybackState] = React.useState({
     url: "",
@@ -485,6 +489,26 @@ function MovieItem({
                 onClose={() => setEllipsisMenuAnchor(null)}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                PaperProps={{
+                  sx: {
+                    backgroundColor: 'rgba(18, 18, 22, 0.9)',
+                    backdropFilter: 'blur(8px)',
+                    border: (theme) =>
+                `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    minWidth: '200px',
+                    '& .MuiMenuItem-root': {
+                      height: '50px',
+                      px: 2,
+                      transition: 'all 0.2s ease',
+                      "&:hover": {
+                        backgroundColor: alpha(
+                          theme.palette.primary.main,
+                          0.15
+                        ),
+                      },
+                    },
+                  },
+                }}
               >
                 <MenuItem
                   onClick={async e => {
@@ -511,6 +535,34 @@ function MovieItem({
                   }}
                 >
                   Remove from Continue Watching
+                </MenuItem>
+                <MenuItem
+                  onClick={async e => {
+                    e.stopPropagation();
+                    try {
+                      const isWatched = (item.viewCount ?? 0) > 0;
+                      await setMediaPlayedStatus(!isWatched, item.ratingKey);
+                      setEllipsisMenuAnchor(null);
+                      if (refetchData) {
+                        await refetchData();
+                      }
+                    } catch (error) {
+                      console.error('Failed to update watch status:', error);
+                      setEllipsisMenuAnchor(null);
+                    }
+                  }}
+                >
+                  {(item.viewCount ?? 0) > 0 ? 'Mark as Unwatched' : 'Mark as Watched'}
+                </MenuItem>
+                <MenuItem
+                  onClick={async e => {
+                    e.stopPropagation();
+                    setEllipsisMenuAnchor(null);
+                    // Force starting from beginning by setting t=0
+                    navigate(`/watch/${item.ratingKey}?t=0`);
+                  }}
+                >
+                  Play from Beginning
                 </MenuItem>
                 <MenuItem onClick={e => { e.stopPropagation(); setEllipsisMenuAnchor(null); }}>Close</MenuItem>
               </Menu>

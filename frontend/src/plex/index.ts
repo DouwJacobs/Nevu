@@ -6,7 +6,8 @@ import { getBackendURL } from "../backendURL";
 export async function getAllLibraries(): Promise<Plex.LibarySection[]> {
     const res = await authedGet(`/library/sections`);
     if (!res) {
-        return [];
+        console.error('Failed to fetch libraries');
+        throw new Error('Failed to fetch libraries');
     }
     return res.MediaContainer.Directory;
 }
@@ -15,6 +16,10 @@ export async function getLibrary(key: string): Promise<Plex.MediaContainer> {
     const res = await authedGet(`/library/sections/${key}?${queryBuilder({
         ...getIncludeProps(),
     })}`);
+    if (!res) {
+        console.error(`Failed to fetch library ${key}`);
+        throw new Error(`Failed to fetch library ${key}`);
+    }
     return res.MediaContainer;
 }
 
@@ -38,11 +43,19 @@ export async function getLibraryDir(key: string, props?: { [key: string]: any })
         ...props,
         ...getIncludeProps(),
     })}`);
+    if (!res) {
+        console.error(`Failed to fetch library directory ${key}`);
+        throw new Error(`Failed to fetch library directory ${key}`);
+    }
     return res.MediaContainer;
 }
 
 export async function getLibrarySecondary(key: string, directory: string): Promise<Plex.Directory[]> {
     const res = await authedGet(`/library/sections/${key}/${directory}`);
+    if (!res) {
+        console.error(`Failed to fetch library secondary ${key}/${directory}`);
+        throw new Error(`Failed to fetch library secondary ${key}/${directory}`);
+    }
     return res.MediaContainer.Directory;
 }
 
@@ -53,7 +66,8 @@ export async function getLibraryMeta(id: string): Promise<Plex.Metadata> {
         ...getXPlexProps()
     })}`);
     if (!res) {
-        return {} as Plex.Metadata;
+        console.error(`Failed to fetch library metadata ${id}`);
+        throw new Error(`Failed to fetch library metadata ${id}`);
     }
     return res.MediaContainer.Metadata[0];
 }
@@ -63,8 +77,11 @@ export async function getLibraryMetaChildren(id: string): Promise<Plex.Metadata[
         ...getIncludeProps(),
         ...getXPlexProps()
     })}`);
+    if (!res) {
+        console.error(`Failed to fetch library metadata children ${id}`);
+        throw new Error(`Failed to fetch library metadata children ${id}`);
+    }
     return res.MediaContainer.Metadata;
-
 }
 
 export async function getSimilar(id: string): Promise<Plex.Metadata[]> {
@@ -191,6 +208,60 @@ export async function getTimelineUpdate(key: number, duration: number, state: st
  */
 export async function getServerPreferences(): Promise<Plex.ServerPreferences> {
     const res = await authedGet(`/`);
+    if (!res) {
+        return {
+            size: 0,
+            allowCameraUpload: false,
+            allowChannelAccess: false,
+            allowMediaDeletion: false,
+            allowSharing: false,
+            allowSync: false,
+            allowTuners: false,
+            backgroundProcessing: false,
+            certificate: false,
+            companionProxy: false,
+            countryCode: "",
+            diagnostics: "",
+            eventStream: false,
+            friendlyName: "",
+            hubSearch: false,
+            itemClusters: false,
+            livetv: 0,
+            machineIdentifier: "",
+            mediaProviders: false,
+            multiuser: false,
+            musicAnalysis: 0,
+            myPlex: false,
+            myPlexMappingState: "",
+            myPlexSigninState: "",
+            myPlexSubscription: false,
+            myPlexUsername: "",
+            offlineTranscode: 0,
+            ownerFeatures: "",
+            photoAutoTag: false,
+            platform: "",
+            platformVersion: "",
+            pluginHost: false,
+            pushNotifications: false,
+            readOnlyLibraries: false,
+            streamingBrainABRVersion: 0,
+            streamingBrainVersion: 0,
+            sync: false,
+            transcoderActiveVideoSessions: 0,
+            transcoderAudio: false,
+            transcoderLyrics: false,
+            transcoderPhoto: false,
+            transcoderSubtitles: false,
+            transcoderVideo: false,
+            transcoderVideoBitrates: "",
+            transcoderVideoQualities: "",
+            transcoderVideoResolutions: "",
+            updatedAt: 0,
+            updater: false,
+            version: "",
+            voiceSearch: false
+        };
+    }
     return res.MediaContainer;
 }
 
@@ -208,6 +279,9 @@ export async function getPlayQueue(uri: string): Promise<Plex.Metadata[]> {
         ...getIncludeProps(),
         ...getXPlexProps()
     })}`);
+    if (!res) {
+        return [];
+    }
     return res.MediaContainer.Metadata;
 }
 

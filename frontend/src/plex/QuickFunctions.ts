@@ -2,16 +2,29 @@ import { ProxiedRequest } from "../backendURL";
 import { useSessionStore } from "../states/SessionState";
 
 export async function authedGet(url: string) {
-    const res = await ProxiedRequest(url, "GET", {
-        'X-Plex-Token': localStorage.getItem("accessToken") as string,
-        'accept': 'application/json'
-    }).catch((err) => {
-        console.log(err);
-        return { status: err.response?.status || 500, data: err.response?.data || 'Internal server error' }
-    });
+    try {
+        const res = await ProxiedRequest(url, "GET", {
+            'X-Plex-Token': localStorage.getItem("accessToken") as string,
+            'accept': 'application/json'
+        });
 
-    if (res.status === 200) return res.data;
-    else return null;
+        if (res.status === 200) return res.data;
+        
+        console.error(`Request failed with status ${res.status}:`, {
+            url,
+            status: res.status,
+            data: res.data
+        });
+        return null;
+    } catch (err: any) {
+        console.error('Request failed:', {
+            url,
+            error: err?.message || err,
+            response: err?.response?.data,
+            status: err?.response?.status
+        });
+        return null;
+    }
 }
 
 export async function authedPost(url: string, body?: any) {
