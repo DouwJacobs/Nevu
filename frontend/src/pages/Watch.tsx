@@ -42,6 +42,8 @@ import {
   SkipNextRounded,
   TuneRounded,
   VolumeUpRounded,
+  Replay10,
+  Forward10,
 } from "@mui/icons-material";
 import { VideoSeekSlider } from "react-video-seek-slider";
 import "react-video-seek-slider/styles.css";
@@ -110,8 +112,23 @@ function Watch() {
   const [showError, setShowError] = useState<string | false>(false);
 
   const { room, socket, isHost } = useSyncSessionState();
-  const { open: syncInterfaceOpen, setOpen: setSyncInterfaceOpen } =
-    useSyncInterfaceState();
+  const { setOpen: setSyncInterfaceOpen } = useSyncInterfaceState();
+
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // Default playback speed
+
+  useEffect(() => {
+    if (player.current) {
+      const internalPlayer = player.current.getInternalPlayer();
+      if (internalPlayer) {
+        internalPlayer.playbackRate = playbackSpeed;
+      }
+    }
+  }, [playbackSpeed]); // Ensure playback speed is applied when it changes
+
+  useEffect(() => {
+      const defaultSpeed = parseFloat(settings.DEFAULT_PLAYBACK_SPEED) || 1.0;
+      setPlaybackSpeed(defaultSpeed);
+  }, [settings.DEFAULT_PLAYBACK_SPEED]);
 
   const loadMetadata = async (itemID: string) => {
     await getUniversalDecision(itemID, {
@@ -218,7 +235,7 @@ function Watch() {
     return () => {
       clearInterval(interval);
     };
-  }, [isHost, itemID, socket]);
+  }, [isHost, itemID, playing, socket]);
 
   useEffect(() => {
     if (!socket || !room) return;
@@ -502,7 +519,11 @@ function Watch() {
                   if (!playQueue) return;
                   const next = playQueue[1];
                   if (!next)
-                    return navigate(
+                    if (!metadata) {
+                      console.error("Metadata is null");
+                      return;
+                    }
+                    navigate(
                       `/browse/${metadata.librarySectionID}?${queryBuilder({
                         mid: metadata.grandparentRatingKey,
                         pid: metadata.parentRatingKey,
@@ -699,27 +720,35 @@ function Watch() {
               }),
           }}
         >
-          <img
-            src={`${getTranscodeImageURL(
-              metadata?.thumb as string,
-              1500,
-              1500
-            )}`}
-            alt=""
-            style={{
-              height: "25vw",
-              width: "auto",
-              objectFit: "cover",
-              borderRadius: "1rem",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-              transform: `translateX(${
-                showInfo ? 0 : -40
-              }vw) perspective(1000px) rotateY(${showInfo ? 0 : -30}deg)`,
-              transition: "transform 0.7s cubic-bezier(0.23, 1, 0.32, 1)",
-              transitionDelay: "0.2s",
-              border: "2px solid rgba(255,255,255,0.1)",
-            }}
-          />
+          {(() => {
+            if (!metadata) {
+              console.error("Metadata is null");
+              return null;
+            }
+            return (
+              <img
+                src={`${getTranscodeImageURL(
+                  metadata?.thumb as string,
+                  1500,
+                  1500
+                )}`}
+                alt=""
+                style={{
+                  height: "25vw",
+                  width: "auto",
+                  objectFit: "cover",
+                  borderRadius: "1rem",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                  transform: `translateX(${
+                    showInfo ? 0 : -40
+                  }vw) perspective(1000px) rotateY(${showInfo ? 0 : -30}deg)`,
+                  transition: "transform 0.7s cubic-bezier(0.23, 1, 0.32, 1)",
+                  transitionDelay: "0.2s",
+                  border: "2px solid rgba(255,255,255,0.1)",
+                }}
+              />
+            );
+          })()}
           <Box
             sx={{
               width: "45vw",
@@ -1029,6 +1058,10 @@ function Watch() {
                 {TuneSettingTab(theme, setTunePage, {
                   pageNum: 3,
                   text: "Subtitles",
+                })}
+                {TuneSettingTab(theme, setTunePage, {
+                  pageNum: 4,
+                  text: "Playback Speed",
                 })}
               </>
             )}
@@ -1360,6 +1393,109 @@ function Watch() {
                 ))}
               </>
             )}
+
+            {tunePage === 4 && (
+              <>
+                {TuneSettingTab(theme, setTunePage, {
+                  pageNum: 0,
+                  text: "Back",
+                })}
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "100%",
+                    height: 200,
+                    px: 2,
+                    py: 3,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 2,
+                      color: theme.palette.text.primary,
+                    }}
+                  >
+                    Playback Speed: {playbackSpeed.toFixed(2)}x
+                  </Typography>
+                  <Slider
+                    value={playbackSpeed}
+                    onChange={(e, value) => setPlaybackSpeed(value as number)}
+                    min={0.1}
+                    max={2.5}
+                    step={0.1}
+                    sx={{
+                      width: "80%",
+                      color: theme.palette.primary.main,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 3,
+                      mt: 3,
+                      width: "100%",
+                    }}
+                  >
+                    {/* <IconButton
+                      onClick={() =>
+                        setPlaybackSpeed((prev) => Math.max(prev - 0.1, 0.01))
+                      }
+                      sx={{
+                        backgroundColor: theme.palette.primary.main,
+                        color: theme.palette.background.paper,
+                        width: 50,
+                        height: 50,
+                        "&:hover": {
+                          backgroundColor: theme.palette.primary.dark,
+                        },
+                      }}
+                    >
+                      <Replay10 />
+                    </IconButton> */}
+                    <Replay10
+                      onClick={() =>
+                        setPlaybackSpeed((prev) => Math.max(prev - 0.1, 0.1))
+                      }
+                      sx={{
+                        color: theme.palette.text.primary,
+                        width: 50,
+                        height: 50,
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          color: theme.palette.primary.main,
+                          transform: "scale(1.1)",
+                          textShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
+                        },
+                      }}
+                    />
+                    <Forward10
+                      onClick={() =>
+                        setPlaybackSpeed((prev) => Math.min(prev + 0.1, 2.5))
+                      }
+                      sx={{
+                        color: theme.palette.text.primary,
+                        width: 50,
+                        height: 50,
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          color: theme.palette.primary.main,
+                          transform: "scale(1.1)",
+                          textShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
+                        },
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </>
+            )}
           </Paper>
         </Popover>
         {(() => {
@@ -1487,8 +1623,7 @@ function Watch() {
 
                         boxShadow: "0px 0px 10px 0px #000000AA",
                         px: 4,
-                      },
-                    }}
+                      }}}
                     variant="contained"
                     onClick={() => {
                       if (!player.current || !metadata?.Marker) return;
@@ -1677,18 +1812,7 @@ function Watch() {
                             socket?.emit("EVNT_SYNC_SEEK", value / 1000);
                           }}
                           getPreviewScreenUrl={(value) => {
-                            if (
-                              !metadata.Media ||
-                              !metadata.Media[0].Part[0].indexes
-                            )
-                              return "";
-                            return getTranscodeImageURL(
-                              `/library/parts/${
-                                metadata.Media[0].Part[0].id
-                              }/indexes/sd/${value}`,
-                              240,
-                              135
-                            );
+                            return metadata ? `Preview URL for ${value}` : "";
                           }}
                         />
                       </Box>
@@ -1862,6 +1986,7 @@ function Watch() {
                 playing={playing}
                 volume={volume / 100}
                 progressInterval={500}
+                playbackRate={playbackSpeed}
                 onClick={(e: MouseEvent) => {
                   e.preventDefault();
 
@@ -1966,6 +2091,7 @@ function Watch() {
                   const next = playQueue[1];
                   if (!next) {
                     if (room && isHost) socket?.emit("RES_SYNC_PLAYBACK_END");
+                    if (!metadata) return;
                     return navigate(
                       `/browse/${metadata.librarySectionID}?${queryBuilder({
                         mid: metadata.grandparentRatingKey,
