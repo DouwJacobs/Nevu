@@ -56,12 +56,14 @@ import { PlexCommunity } from "../plex/plexCommunity";
 import moment from "moment";
 import { getBackendURL } from "../backendURL";
 import { queryBuilder } from "../plex/QuickFunctions";
+import { useSettingsStore } from "../states/SettingsState";
 
 function MetaScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { MetaScreenPlayerMuted, setMetaScreenPlayerMuted } =
     usePreviewPlayer();
+  const { contentDisplaySettings } = useSettingsStore();
 
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<Plex.Metadata | undefined>(undefined);
@@ -531,7 +533,7 @@ function MetaScreen() {
                     }}
                   />
                 )}
-                {data?.contentRating && (
+                {contentDisplaySettings.showContentRatings && data?.contentRating && (
                   <Typography
                     sx={{
                       fontSize: "medium",

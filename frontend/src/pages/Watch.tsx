@@ -60,6 +60,7 @@ import WatchShowChildView from "../components/WatchShowChildView";
 import { useUserSettings } from "../states/UserSettingsState";
 import PlaybackNextEPButton from "../components/PlaybackNextEPButton";
 import { getBackendURL } from "../backendURL";
+import { useSettingsStore } from "../states/SettingsState";
 
 let SessionID = "";
 export { SessionID };
@@ -72,6 +73,7 @@ function Watch() {
 
   const { sessionID } = useSessionStore();
   const { settings } = useUserSettings();
+  const { contentDisplaySettings } = useSettingsStore();
 
   const [metadata, setMetadata] = useState<Plex.Metadata | null>(null);
   const [showmetadata, setShowMetadata] = useState<Plex.Metadata | null>(null);
@@ -818,53 +820,53 @@ function Watch() {
                     gap: 2,
                   }}
                 >
-                  {metadata.year && (
+                  {contentDisplaySettings.showContentRatings && metadata?.contentRating && (
                     <Typography
                       sx={{
-                        fontSize: "0.8vw",
-                        fontWeight: 400,
-                        color: "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      {metadata.year}
-                    </Typography>
-                  )}
-                  {metadata.rating && (
-                    <Typography
-                      sx={{
-                        fontSize: "0.8vw",
-                        fontWeight: 400,
-                        color: "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      {metadata.rating}
-                    </Typography>
-                  )}
-                  {metadata.contentRating && (
-                    <Typography
-                      sx={{
-                        fontSize: "0.7vw",
-                        fontWeight: 500,
-                        color: "rgba(255,255,255,0.9)",
-                        border: `1px solid rgba(255,255,255,0.3)`,
-                        borderRadius: "4px",
+                        fontSize: "medium",
+                        fontWeight: "light",
+                        color: (theme) => theme.palette.text.secondary,
+                        border: (theme) => `1px solid ${theme.palette.divider}`,
+                        borderRadius: "5px",
                         px: 1,
-                        py: 0.3,
+                        py: 0.2,
                       }}
                     >
-                      {metadata.contentRating}
+                      {metadata?.contentRating}
                     </Typography>
                   )}
-                  {metadata.duration &&
-                    ["episode", "movie"].includes(metadata.type) && (
+                  {contentDisplaySettings.showReleaseYear && metadata?.year && (
+                    <Typography
+                      sx={{
+                        fontSize: "medium",
+                        fontWeight: "light",
+                        color: (theme) => theme.palette.text.secondary,
+                      }}
+                    >
+                      {metadata?.year}
+                    </Typography>
+                  )}
+                  {contentDisplaySettings.showContentRatings && metadata?.rating && (
+                    <Typography
+                      sx={{
+                        fontSize: "medium",
+                        fontWeight: "light",
+                        color: (theme) => theme.palette.text.secondary,
+                      }}
+                    >
+                      {metadata?.rating}
+                    </Typography>
+                  )}
+                  {contentDisplaySettings.showDuration && metadata?.duration &&
+                    ["episode", "movie"].includes(metadata?.type) && (
                       <Typography
                         sx={{
-                          fontSize: "0.9vw",
-                          fontWeight: 400,
-                          color: "rgba(255,255,255,0.7)",
+                          fontSize: "medium",
+                          fontWeight: "light",
+                          color: (theme) => theme.palette.text.secondary,
                         }}
                       >
-                        {durationToText(metadata.duration)}
+                        {durationToText(metadata?.duration)}
                       </Typography>
                     )}
                 </Box>
@@ -920,53 +922,53 @@ function Watch() {
                     gap: 2,
                   }}
                 >
-                  {metadata.year && (
+                  {contentDisplaySettings.showContentRatings && metadata?.contentRating && (
                     <Typography
                       sx={{
-                        fontSize: "0.8vw",
-                        fontWeight: 400,
-                        color: "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      {metadata.year}
-                    </Typography>
-                  )}
-                  {metadata.rating && (
-                    <Typography
-                      sx={{
-                        fontSize: "0.8vw",
-                        fontWeight: 400,
-                        color: "rgba(255,255,255,0.7)",
-                      }}
-                    >
-                      {metadata.rating}
-                    </Typography>
-                  )}
-                  {metadata.contentRating && (
-                    <Typography
-                      sx={{
-                        fontSize: "0.7vw",
-                        fontWeight: 500,
-                        color: "rgba(255,255,255,0.9)",
-                        border: `1px solid rgba(255,255,255,0.3)`,
-                        borderRadius: "4px",
+                        fontSize: "medium",
+                        fontWeight: "light",
+                        color: (theme) => theme.palette.text.secondary,
+                        border: (theme) => `1px solid ${theme.palette.divider}`,
+                        borderRadius: "5px",
                         px: 1,
-                        py: 0.3,
+                        py: 0.2,
                       }}
                     >
-                      {metadata.contentRating}
+                      {metadata?.contentRating}
                     </Typography>
                   )}
-                  {metadata.duration &&
-                    ["episode", "movie"].includes(metadata.type) && (
+                  {contentDisplaySettings.showReleaseYear && metadata?.year && (
+                    <Typography
+                      sx={{
+                        fontSize: "medium",
+                        fontWeight: "light",
+                        color: (theme) => theme.palette.text.secondary,
+                      }}
+                    >
+                      {metadata?.year}
+                    </Typography>
+                  )}
+                  {contentDisplaySettings.showContentRatings && metadata?.rating && (
+                    <Typography
+                      sx={{
+                        fontSize: "medium",
+                        fontWeight: "light",
+                        color: (theme) => theme.palette.text.secondary,
+                      }}
+                    >
+                      {metadata?.rating}
+                    </Typography>
+                  )}
+                  {contentDisplaySettings.showDuration && metadata?.duration &&
+                    ["episode", "movie"].includes(metadata?.type) && (
                       <Typography
                         sx={{
-                          fontSize: "0.8vw",
-                          fontWeight: 400,
-                          color: "rgba(255,255,255,0.7)",
+                          fontSize: "medium",
+                          fontWeight: "light",
+                          color: (theme) => theme.palette.text.secondary,
                         }}
                       >
-                        {durationToText(metadata.duration)}
+                        {durationToText(metadata?.duration)}
                       </Typography>
                     )}
                 </Box>

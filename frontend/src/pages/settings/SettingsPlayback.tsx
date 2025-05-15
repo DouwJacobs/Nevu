@@ -11,16 +11,6 @@ function SettingsPlayback() {
     <>
       <Typography variant="h4">Experience - Playback</Typography>
 
-      <Box
-        sx={{
-          mt: 2,
-          width: "100%",
-          height: "40px",
-          backgroundColor: "#181818",
-          borderRadius: "10px",
-        }}
-      />
-
       <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
         <CheckBoxOption
           title="Disable Watchscreen Darkening"

@@ -6,6 +6,7 @@ import SettingsPlayback from "./settings/SettingsPlayback";
 import { useUserSettings } from "../states/UserSettingsState";
 import SettingsRecommendations from "./settings/SettingsRecommendations";
 import SettingsLibraries from "./settings/SettingsLibraries";
+import SettingsContentDisplay from "./settings/SettingsContentDisplay";
 
 function Settings() {
   const { loaded } = useUserSettings();
@@ -49,6 +50,7 @@ function Settings() {
           backgroundColor: "#181818",
           padding: "10px",
           borderRadius: "10px",
+          overflowY: "auto",
         }}
       >
         <SettingsDivider title="General" />
@@ -57,6 +59,7 @@ function Settings() {
         <SettingsDivider title="Experience" />
         <SettingsItem title="Playback" link="/settings/experience-playback" />
         <SettingsItem title="Recommendations" link="/settings/experience-recommendations" />
+        <SettingsItem title="Content Display" link="/settings/experience-content-display" />
         <SettingsItem title="Libraries" link="/settings/experience-libraries" />
       </Box>
 
@@ -72,14 +75,15 @@ function Settings() {
           padding: "20px",
           borderRadius: "10px",
           ml: "auto",
+          overflowY: "auto",
           mr: "auto",
         }}
       >
         <Routes>
           <Route path="/info" element={<SettingsInfo />} />
-
           <Route path="/experience-playback" element={<SettingsPlayback />} />
           <Route path="/experience-recommendations" element={<SettingsRecommendations />} />
+          <Route path="/experience-content-display" element={<SettingsContentDisplay />} />
           <Route path="/experience-libraries" element={<SettingsLibraries />} />
         </Routes>
       </Box>
