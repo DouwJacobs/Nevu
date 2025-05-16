@@ -7,7 +7,6 @@ import {
   CheckCircleRounded,
   VolumeOffRounded,
   VolumeUpRounded,
-  MoreVert,
   MoreHoriz,
 } from "@mui/icons-material";
 import {
@@ -33,7 +32,6 @@ import {
   getLibraryMetaChildren,
   getItemByGUID,
   setMediaPlayedStatus,
-  getTimelineUpdate,
 } from "../plex";
 import { durationToText } from "./MovieItemSlider";
 import {
@@ -47,6 +45,7 @@ import ReactPlayer from "react-player";
 import { useConfirmModal } from "./ConfirmModal";
 import { getBackendURL, ProxiedRequest } from "../backendURL";
 import { queryBuilder } from "../plex/QuickFunctions";
+import { useSettingsStore } from "../states/SettingsState";
 
 interface MovieItemPreviewPlaybackState {
   url: string;
@@ -81,6 +80,7 @@ function MovieItem({
   const [, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { MetaScreenPlayerMuted } = usePreviewPlayer();
+  const { contentDisplaySettings } = useSettingsStore();
 
   const [playButtonLoading, setPlayButtonLoading] = React.useState(false);
   const [contextMenu, setContextMenu] = React.useState<{
@@ -431,7 +431,7 @@ function MovieItem({
                   new URL("http://localhost:3000" + mediaURL).searchParams.entries()
                 ),
               })}`,
-              playing: true,
+              playing: contentDisplaySettings.autoPlayTrailers,
             });
           }, 1000);
         }}
@@ -459,7 +459,7 @@ function MovieItem({
           }}
         >
           {/* Ellipsis button for Continue Watching cards - now at top right */}
-          {(item.type === "episode" || (item.type === "movie" && item.viewOffset)) && (
+          {((item.type === "episode" || item.type === "movie") && item.viewOffset) && (
             <Box
               sx={{
                 position: "absolute",
@@ -571,7 +571,6 @@ function MovieItem({
           <Box
             sx={{
               position: "absolute",
-              // make it take up the full width of the parent
               width: "100%",
               aspectRatio: "16/9",
               left: 0,
@@ -582,7 +581,6 @@ function MovieItem({
                 ? "rgba(18, 18, 22, 0.9)"
                 : "transparent",
               pointerEvents: "none",
-
               overflow: "hidden",
             }}
           >
@@ -591,7 +589,7 @@ function MovieItem({
               controls={false}
               width="100%"
               height="100%"
-              autoplay={true}
+              autoplay={contentDisplaySettings.autoPlayTrailers}
               playing={previewPlaybackState.playing}
               volume={MetaScreenPlayerMuted ? 0 : 0.5}
               muted={MetaScreenPlayerMuted}
@@ -773,47 +771,23 @@ function MovieItem({
               gap: 1,
             }}
           >
-            {/* {item.rating && (
-            <Typography
-              sx={{
-                fontSize: "medium",
-                fontWeight: "light",
-                color: "#FFFFFF",
-                ml: 1,
-              }}
-            >
-              {item.rating}
-            </Typography>
-          )}
-          {item.contentRating && (
-            <Typography
-              sx={{
-                fontSize: "medium",
-                fontWeight: "light",
-                color: "#FFFFFF",
-                ml: 1,
-                border: "1px dotted #AAAAAA",
-                borderRadius: "5px",
-                px: 1,
-                py: -0.5,
-              }}
-            >
-              {item.contentRating}
-            </Typography>
-          )} */}
-            {/* {item.type === "episode" && item.index && (
-            <Typography
-              sx={{
-                fontSize: "medium",
-                fontWeight: "light",
-                color: "#FFFFFF",
-                ml: 1,
-              }}
-            >
-              S{item.parentIndex} E{item.index}
-            </Typography>
-          )} */}
-            {item.duration && ["episode", "movie"].includes(item.type) && (
+            {contentDisplaySettings.showContentRatings && item.contentRating && (
+              <Typography
+                sx={{
+                  fontSize: "13px",
+                  fontWeight: "400",
+                  color: "#FFFFFF",
+                  opacity: 0.7,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  borderRadius: "4px",
+                  px: 1,
+                  py: 0.2,
+                }}
+              >
+                {item.contentRating}
+              </Typography>
+            )}
+            {contentDisplaySettings.showDuration && item.duration && ["episode", "movie"].includes(item.type) && (
               <Typography
                 sx={{
                   fontSize: "13px",
@@ -844,7 +818,7 @@ function MovieItem({
                 </Typography>
               )}
 
-            {item.year && (
+            {contentDisplaySettings.showReleaseYear && item.year && (
               <Typography
                 sx={{
                   fontSize: "13px",
