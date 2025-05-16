@@ -1,4 +1,4 @@
-import { Typography, Box, Switch, FormControlLabel, Divider } from "@mui/material";
+import { Typography, Box, Switch, FormControlLabel } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useSettingsStore } from "../../states/SettingsState";
 

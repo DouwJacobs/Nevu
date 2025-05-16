@@ -89,7 +89,7 @@ function MetaScreen() {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [setSearchParams]);
 
   useEffect(() => {
     setData(undefined);
@@ -255,9 +255,9 @@ function MetaScreen() {
       </Backdrop>
     );
 
-  const selectedSeasonData = data?.Children?.Metadata.find(
-    (season) => season.index === selectedSeason
-  );
+  // const selectedSeasonData = data?.Children?.Metadata.find(
+  //   (season) => season.index === selectedSeason
+  // );
 
   return (
     <Backdrop
